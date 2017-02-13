@@ -16,21 +16,21 @@ def diagnostics(request_lines, path)
   accept = request_lines[-3].split[1]
 
   header_string =
-  "<pre>Verb: #{verb}\nPath: #{path}\nProtocol: #{protocol}\nHost: #{host}\nPort:#{port}\nOrigin: #{origin}\nAccept: #{accept}</pre>"
+  " <pre>Verb: #{verb}\nPath: #{path}\nProtocol: #{protocol}\nHost: #{host}\nPort:#{port}\nOrigin: #{origin}\nAccept: #{accept}</pre>"
 end
 
 def hello
-  "<h1>Hello World! (#{@hello_counter})</h1>"
   @hello_counter += 1
+  "<h1> Hello World! (#{@hello_counter}) </h1>"
 end
 
 def datetime
-   "<h1>{Time.now.strftime('%m %M %p on %A %B %w %Y')}</h1>"
+   " <h1>#{Time.now.strftime('%m %M %p on %A %B %w %Y')}</h1> "
 end
 
 def shutdown
   @server_exit = true
-  "<h1>Total Requests: #{@request_total}"
+  " <h1>Total Requests: #{@request_total} </h1> "
 end
 
 puts "Ready for request"
@@ -52,9 +52,9 @@ until @server_exit
   elsif path == '/hello'
     response = hello
   elsif path == '/datetime'
-    response == datetime
+    response = datetime
   elsif path == '/shutdown'
-    response == shutdown
+    response = shutdown
   end
 
 
