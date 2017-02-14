@@ -1,15 +1,20 @@
 require 'pry'
 require 'socket'
+require_relative 'response'
 class Server
-  attr_reader :tcp_server, :path, :input_word
+  attr_reader :tcp_server, :path, :input_word, :request_lines, :hello_counter
+
+
   def initialize(port)
     @tcp_server = TCPServer.new(9292)
-    @hello_counter = 0
+    # @hello_counter = 0
     @request_total = 0
     @server_exit = false
     @dictionary = File.read("/usr/share/dict/words").split("\n")
     @path = ""
     @input_word = ''
+    # @request_lines = []
+    @response = Response.new
   end
   # binding.pry
   def communicate_with_server
@@ -24,10 +29,10 @@ class Server
       puts "Got this request: "
       puts request_lines.inspect
 
-      @path = request_lines[0].split[1].split("?")[0]
+      # @path = request_lines[0].split[1].split("?")[0]
       @input_word = request_lines[0].split[1].split("=")[1]
       @request_total += 1
-
+      diagnostics(request_lines)
       response = path_decider(request_lines)
 
       # binding.pry
@@ -53,26 +58,16 @@ class Server
       client.close
   end
 
-  def diagnostics(request_lines, path)
+  def diagnostics(request_lines)
     verb = request_lines[0].split[0]
+    @path = request_lines[0].split[1].split("?")[0]
     protocol = request_lines[0].split[2]
     host = request_lines[1].split(":")[1].lstrip
     port = request_lines[1].split(":")[2]
     origin = host
     accept = request_lines[-3].split[1]
 
-    " <pre>Verb: #{verb}\nPath: #{path}\nProtocol: #{protocol}\nHost: #{host}\nPort:#{port}\nOrigin: #{origin}\nAccept: #{accept}</pre>"
-  end
-
-  def hello
-    @hello_counter += 1
-    "<h1> Hello World! (#{@hello_counter}) </h1>"
-    # diagnostics(request_lines, path)
-  end
-
-  def datetime
-     " <h1>#{Time.now.strftime('%H:%M%p on %A, %B %w, %Y')}</h1> "
-    #  binding.pry
+    " <pre>Verb: #{verb}\nPath: #{@path}\nProtocol: #{protocol}\nHost: #{host}\nPort:#{port}\nOrigin: #{origin}\nAccept: #{accept}</pre>"
   end
 
   def shutdown
@@ -91,11 +86,11 @@ class Server
   def path_decider(request_lines)
     case path
     when '/'
-      diagnostics(request_lines, path)
+      diagnostics(request_lines)
     when '/hello'
-      hello
+      @response.hello
     when '/datetime'
-      datetime
+      @response.datetime
     when '/shutdown'
       shutdown
     when '/word_search'
