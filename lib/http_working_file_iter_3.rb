@@ -5,8 +5,9 @@ tcp_server = TCPServer.new(9292)
 @hello_counter = 0
 @request_total = 0
 @server_exit = false
+@dictionary = File.read("/usr/share/dict/words").split("\n")
 
-
+# binding.pry
 def diagnostics(request_lines, path)
   verb = request_lines[0].split[0]
   protocol = request_lines[0].split[2]
@@ -26,11 +27,20 @@ end
 
 def datetime
    " <h1>#{Time.now.strftime('%m %M %p on %A %B %w %Y')}</h1> "
+  #  binding.pry
 end
 
 def shutdown
   @server_exit = true
   " <h1>Total Requests: #{@request_total} </h1> "
+end
+
+def word_search(input_word)
+  if @dictionary.include?(input_word)
+    "#{input_word} is a known word"
+  else
+    "#{input_word} is not a known word"
+  end
 end
 
 puts "Ready for request"
@@ -44,7 +54,8 @@ until @server_exit
   puts "Got this request: "
   puts request_lines.inspect
 
-  path = request_lines[0].split[1]
+  path = request_lines[0].split[1].split("?")[0]
+  input_word = request_lines[0].split[1].split("=")[1]
   @request_total += 1
 
   # if path == '/'
@@ -66,8 +77,10 @@ until @server_exit
     response = datetime
   when '/shutdown'
     response = shutdown
+  when '/word_search'
+    response = word_search(input_word)
+    # binding.pry
   end
-
 
 
   # binding.pry
@@ -87,7 +100,7 @@ until @server_exit
     # @response_counter += 1
 
 
-    puts ["Wrote this response:", headers, output].join("\n")
+    # puts ["Wrote this response:", headers, output].join("\n")
     puts "\nResponse complete, exiting."
   end
 client.close
