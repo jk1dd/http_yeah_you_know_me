@@ -7,17 +7,13 @@ class Server
 
   def initialize(port)
     @tcp_server = TCPServer.new(port)
-    # @hello_counter = 0
     @request_total = 0
     @server_exit = false
     @dictionary = File.read("/usr/share/dict/words").split("\n")
     @path = ""
     @input_word = ''
     @response = Response.new
-    # client = @tcp_server.accept
-    # @request_lines = []
   end
-  # binding.pry
   def start_server
     @tcp_server.accept
   end
@@ -33,43 +29,20 @@ class Server
   def communicate_with_server
     until @server_exit
       puts "Ready for request"
-      # binding.pry
       client = start_server
-      # request_lines = []
-      # while line = client.gets and !line.chomp.empty?
-      #   request_lines << line.chomp
-      # end
       request_lines = collect_request_lines(client)
       puts "Got this request: "
       puts request_lines.inspect
 
-      # @input_word = request_lines[0].split[1].split("=")[1]
       @request_total += 1
       diagnostics(request_lines)
       word_parser(request_lines)
       response = path_decider(request_lines)
 
-      # binding.pry
       puts "Sending response."
       send_response(response, client)
-
-      # loop do
-      # response = header_string #
-      # output = "<html><head></head><body>#{response}</body></html>"
-      # headers = [ "http/1.1 200 ok",
-      #   "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
-      #   "server: ruby:",
-      #   "content-type: text/html; charset=iso-8859-1",
-      #   "content-length: #{output.length}\r\n\r\n"].join("\r\n")
-      #   client.puts headers
-      #   client.puts output
-      #   # @response_counter += 1
-      #
-      #
-      #   # puts ["Wrote this response:", headers, output].join("\n")
-      #   puts "\nResponse complete, exiting."
-      end
-      client.close
+    end
+    client.close
   end
 
   def word_parser(request_lines)
@@ -87,10 +60,6 @@ class Server
       "content-length: #{output.length}\r\n\r\n"].join("\r\n")
       client.puts headers
       client.puts output
-      # @response_counter += 1
-
-
-      # puts ["Wrote this response:", headers, output].join("\n")
       puts "\nResponse complete, exiting."
   end
 
@@ -113,36 +82,28 @@ class Server
 
   def word_search(input_word)
     if @dictionary.include?(input_word)
-      "#{input_word} is a known word"
+      "<h1>#{input_word.upcase} is a known word</h1> "
     else
-      "#{input_word} is not a known word"
+      "#{input_word.upcase} is not a known word"
     end
   end
 
-  def path_decider(request_lines) 
+  def path_decider(request_lines)
     case path
     when '/'
       diagnostics(request_lines)
     when '/hello'
-      response.hello
-      # binding.pry
+      response.hello + diagnostics(request_lines)
     when '/datetime'
-      response.datetime
+      response.datetime + diagnostics(request_lines)
     when '/shutdown'
-      shutdown
+      shutdown + diagnostics(request_lines)
     when '/word_search'
-      word_search(input_word)
-      # binding.pry
+      word_search(input_word) + diagnostics(request_lines)
     end
   end
 
 end
 
-
-# if __FILE__ == $0
-#   server = Server.new(9292)
-# end
 server = Server.new(9292)
 server.communicate_with_server
-# binding.pry
-# ""
