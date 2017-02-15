@@ -13,25 +13,35 @@ class Server
     @dictionary = File.read("/usr/share/dict/words").split("\n")
     @path = ""
     @input_word = ''
+    # client = @tcp_server.accept
     # @request_lines = []
-    @response = Response.new
   end
   # binding.pry
+  def start_server
+    @tcp_server.accept
+  end
+
+  def collect_request_lines(client)
+    request_lines = []
+    while line = client.gets and !line.chomp.empty?
+      request_lines << line.chomp
+    end
+    request_lines
+  end
+
   def communicate_with_server
     until @server_exit
       puts "Ready for request"
-      client = @tcp_server.accept
-      request_lines = []
-      while line = client.gets and !line.chomp.empty?
-        request_lines << line.chomp
-      end
+      # binding.pry
+      client = start_server
 
+      request_lines = collect_request_lines(client)
       puts "Got this request: "
       puts request_lines.inspect
+      @request_total += 1
 
       # @path = request_lines[0].split[1].split("?")[0]
       @input_word = request_lines[0].split[1].split("=")[1]
-      @request_total += 1
       diagnostics(request_lines)
       response = path_decider(request_lines)
 
@@ -84,13 +94,14 @@ class Server
   end
 
   def path_decider(request_lines)
+    response = Response.new
     case path
     when '/'
       diagnostics(request_lines)
     when '/hello'
-      @response.hello
+      response.hello
     when '/datetime'
-      @response.datetime
+      response.datetime
     when '/shutdown'
       shutdown
     when '/word_search'
@@ -106,5 +117,6 @@ end
 #   server = Server.new(9292)
 # end
 server = Server.new(9292)
-binding.pry
-""
+server.communicate_with_server
+# binding.pry
+# ""
