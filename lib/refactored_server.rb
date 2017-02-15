@@ -2,17 +2,18 @@ require 'pry'
 require 'socket'
 require_relative 'response'
 class Server
-  attr_reader :tcp_server, :path, :input_word, :request_lines, :hello_counter
+  attr_reader :tcp_server, :path, :input_word, :request_lines, :response
 
 
   def initialize(port)
-    @tcp_server = TCPServer.new(9292)
+    @tcp_server = TCPServer.new(port)
     # @hello_counter = 0
     @request_total = 0
     @server_exit = false
     @dictionary = File.read("/usr/share/dict/words").split("\n")
     @path = ""
     @input_word = ''
+    @response = Response.new
     # client = @tcp_server.accept
     # @request_lines = []
   end
@@ -34,38 +35,63 @@ class Server
       puts "Ready for request"
       # binding.pry
       client = start_server
-
+      # request_lines = []
+      # while line = client.gets and !line.chomp.empty?
+      #   request_lines << line.chomp
+      # end
       request_lines = collect_request_lines(client)
       puts "Got this request: "
       puts request_lines.inspect
-      @request_total += 1
 
-      # @path = request_lines[0].split[1].split("?")[0]
-      @input_word = request_lines[0].split[1].split("=")[1]
+      # @input_word = request_lines[0].split[1].split("=")[1]
+      @request_total += 1
       diagnostics(request_lines)
+      word_parser(request_lines)
       response = path_decider(request_lines)
 
       # binding.pry
       puts "Sending response."
-
+      send_response(response, client)
 
       # loop do
       # response = header_string #
-      output = "<html><head></head><body>#{response}</body></html>"
-      headers = [ "http/1.1 200 ok",
-        "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
-        "server: ruby:",
-        "content-type: text/html; charset=iso-8859-1",
-        "content-length: #{output.length}\r\n\r\n"].join("\r\n")
-        client.puts headers
-        client.puts output
-        # @response_counter += 1
-
-
-        # puts ["Wrote this response:", headers, output].join("\n")
-        puts "\nResponse complete, exiting."
+      # output = "<html><head></head><body>#{response}</body></html>"
+      # headers = [ "http/1.1 200 ok",
+      #   "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
+      #   "server: ruby:",
+      #   "content-type: text/html; charset=iso-8859-1",
+      #   "content-length: #{output.length}\r\n\r\n"].join("\r\n")
+      #   client.puts headers
+      #   client.puts output
+      #   # @response_counter += 1
+      #
+      #
+      #   # puts ["Wrote this response:", headers, output].join("\n")
+      #   puts "\nResponse complete, exiting."
       end
       client.close
+  end
+
+  def word_parser(request_lines)
+    if path == '/word_search'
+      @input_word = request_lines[0].split[1].split("=")[1]
+    end
+  end
+
+  def send_response(response, client)
+    output = "<html><head></head><body>#{response}</body></html>"
+    headers = [ "http/1.1 200 ok",
+      "date: #{Time.now.strftime('%a, %e %b %Y %H:%M:%S %z')}",
+      "server: ruby:",
+      "content-type: text/html; charset=iso-8859-1",
+      "content-length: #{output.length}\r\n\r\n"].join("\r\n")
+      client.puts headers
+      client.puts output
+      # @response_counter += 1
+
+
+      # puts ["Wrote this response:", headers, output].join("\n")
+      puts "\nResponse complete, exiting."
   end
 
   def diagnostics(request_lines)
@@ -93,13 +119,13 @@ class Server
     end
   end
 
-  def path_decider(request_lines)
-    response = Response.new
+  def path_decider(request_lines) 
     case path
     when '/'
       diagnostics(request_lines)
     when '/hello'
       response.hello
+      # binding.pry
     when '/datetime'
       response.datetime
     when '/shutdown'
