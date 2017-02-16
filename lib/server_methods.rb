@@ -1,7 +1,7 @@
 require 'pry'
 require 'socket'
-require_relative 'response'
-require './lib/server_methods'
+require './lib/response'
+
 class ServerMethods
   attr_reader :tcp_server, :path, :input_word, :request_lines, :response
 

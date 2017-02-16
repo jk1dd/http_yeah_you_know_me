@@ -20,7 +20,7 @@ class ServerMethodsTest < Minitest::Test
 
   def test_it_can_return_diagnostics
     server = ServerMethods.new(9291)
-    
+
     assert_equal " <pre>Verb: GET\nPath: /word_search\nProtocol: HTTP/1.1\nHost: 127.0.0.1\nPort: 9292\nOrigin: 127.0.0.1\nAccept: */*</pre>", server.diagnostics(@request_lines)
   end
 
@@ -43,7 +43,6 @@ class ServerMethodsTest < Minitest::Test
   def test_it_can_parse_word_from_request_lines
     server = ServerMethods.new(9292)
     server.diagnostics(@request_lines)
-    # binding.pry
     assert_equal "the", server.word_parser(@request_lines)
   end
 
