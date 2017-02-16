@@ -41,6 +41,12 @@ class ServerTest < Minitest::Test
     assert response.body.include?("THE is a known word")
   end
 
+  def test_unknown_page_returns_blank
+    response = Faraday.get 'http://127.0.0.1:9292/afdjklwnendkk'
+    expected = "<html><head></head><body></body></html>"
+    assert_equal expected, response.body
+  end
+
   def test_zzz_can_it_can_return_total_request_phrase
     response = Faraday.get 'http://127.0.0.1:9292/shutdown'
 

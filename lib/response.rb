@@ -15,5 +15,4 @@ class Response
      " <h1>#{Time.now.strftime('%H:%M%p on %A, %B %e, %Y')}</h1> "
   end
 
-
 end
