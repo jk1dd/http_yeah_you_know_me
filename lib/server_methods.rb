@@ -1,7 +1,8 @@
 require 'pry'
 require 'socket'
 require_relative 'response'
-class Server
+require './lib/server_methods'
+class ServerMethods
   attr_reader :tcp_server, :path, :input_word, :request_lines, :response
 
 
@@ -73,7 +74,7 @@ class Server
     origin = host
     accept = request_lines[-3].split[1]
 
-    " <pre>Verb: #{verb}\nPath: #{@path}\nProtocol: #{protocol}\nHost: #{host}\nPort:#{port}\nOrigin: #{origin}\nAccept: #{accept}</pre>"
+    " <pre>Verb: #{verb}\nPath: #{@path}\nProtocol: #{protocol}\nHost: #{host}\nPort: #{port}\nOrigin: #{origin}\nAccept: #{accept}</pre>"
   end
 
   def shutdown
@@ -105,6 +106,3 @@ class Server
   end
 
 end
-
-server = Server.new(9292)
-server.communicate_with_server
