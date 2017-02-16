@@ -5,7 +5,6 @@ require './lib/response'
 class ServerMethods
   attr_reader :tcp_server, :path, :input_word, :request_lines, :response
 
-
   def initialize(port)
     @tcp_server = TCPServer.new(port)
     @request_total = 0
